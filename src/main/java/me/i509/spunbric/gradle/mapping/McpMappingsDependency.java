@@ -12,7 +12,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.jar.JarFile;
 
@@ -22,12 +21,6 @@ import org.cadixdev.bombe.analysis.ReflectionInheritanceProvider;
 import org.cadixdev.bombe.asm.analysis.ClassProviderInheritanceProvider;
 import org.cadixdev.bombe.asm.jar.ClassProvider;
 import org.cadixdev.bombe.asm.jar.JarFileClassProvider;
-import org.cadixdev.bombe.type.ArrayType;
-import org.cadixdev.bombe.type.BaseType;
-import org.cadixdev.bombe.type.FieldType;
-import org.cadixdev.bombe.type.PrimitiveType;
-import org.cadixdev.bombe.type.VoidType;
-import org.cadixdev.bombe.type.signature.FieldSignature;
 import org.cadixdev.lorenz.MappingSet;
 import org.cadixdev.lorenz.io.MappingsReader;
 import org.cadixdev.lorenz.io.MappingsWriter;
@@ -50,7 +43,6 @@ import net.fabricmc.mapping.tree.TinyTree;
 
 final class McpMappingsDependency implements SelfResolvingDependency {
 	private static final String MCP_CONFIG_CONFIGURATION = "mcpConfig";
-	private static final String MAPPINGS_CONFIGURATION = "mappingChannel";
 	private static final String GROUP = "de.oceanlabs.mcp";
 	private static final String MODULE = "mcp_config";
 	private final Project project;
@@ -75,10 +67,7 @@ final class McpMappingsDependency implements SelfResolvingDependency {
 		Set<File> mappingChannelFiles;
 
 		if (channelProvider != null) {
-			final Configuration mappingChannelConfig = this.project.getConfigurations().maybeCreate(MAPPINGS_CONFIGURATION);
-			this.project.getDependencies().add(MAPPINGS_CONFIGURATION, channelProvider.createDependency(this.extension.getMappingVersion()));
-			mappingChannelFiles = mappingChannelConfig.resolve();
-			System.out.println(mappingChannelFiles);
+			mappingChannelFiles = channelProvider.resolve(this.project, this.extension.getMappingVersion());
 		} else {
 			mappingChannelFiles = Collections.emptySet();
 		}
@@ -136,7 +125,7 @@ final class McpMappingsDependency implements SelfResolvingDependency {
 				// Now we can create the srg -> mcp mappings
 				// Merge the intermediary -> [srg -> srg] -> mcp mappings
 				intermediaryToMapped = intermediaryToSrgMappings;
-				channelProvider.applyMappings(intermediaryToMapped);
+				channelProvider.applyMappings(intermediaryToMapped, mappingChannelFiles);
 			} else {
 				intermediaryToMapped = intermediaryToSrgMappings;
 			}
@@ -209,13 +198,9 @@ final class McpMappingsDependency implements SelfResolvingDependency {
 	}
 
 	private MappingSet getSrgMappings(Set<File> mcpConfigFiles) throws IOException {
-		final Optional<File> mcpConfig = mcpConfigFiles.stream().findFirst();
+		final File mcpConfig = mcpConfigFiles.iterator().next();
 
-		if (!mcpConfig.isPresent()) {
-			throw new RuntimeException();
-		}
-
-		final Zips zips = Zips.get(mcpConfig.get());
+		final Zips zips = Zips.get(mcpConfig);
 
 		final byte[] configFile = zips.getEntry("config.json");
 

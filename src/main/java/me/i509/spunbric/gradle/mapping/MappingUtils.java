@@ -61,12 +61,7 @@ final class MappingUtils {
 
 		if (fieldType instanceof ObjectType) {
 			return mappings.getClassMapping(((ObjectType) fieldType).getClassName())
-					.map(classMapping -> {
-						final ObjectType objectType = new ObjectType(classMapping.getDeobfuscatedName());
-						//System.out.println(fieldType);
-						//System.out.println(objectType);
-						return objectType;
-					});
+					.map(classMapping -> new ObjectType(classMapping.getDeobfuscatedName()));
 		}
 
 		throw new RuntimeException("Unsupported field type: " + fieldType);

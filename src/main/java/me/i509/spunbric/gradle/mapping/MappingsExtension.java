@@ -23,6 +23,8 @@ public class MappingsExtension {
 	public void registerMappingChannel(String name, MappingChannelProvider provider) {
 		Objects.requireNonNull(name, "Channel name cannot be null");
 		Objects.requireNonNull(provider, "Channel provider cannot be null");
+
+		this.channels.put(name, provider);
 	}
 
 	@Input
@@ -50,6 +52,7 @@ public class MappingsExtension {
 				throw new RuntimeException("No version specified for mapping channel");
 			}
 
+			// TODO: Check the list and fail if not present
 			return this.channels.get(this.mappingChannel);
 		}
 
@@ -62,9 +65,9 @@ public class MappingsExtension {
 	}
 
 	private void registerDefaultChannels() {
-		this.registerMappingChannel("snapshot", new ChannelProviders.McpMappingChannel("snapshot", true));
-		this.registerMappingChannel("snapshot_nodoc", new ChannelProviders.McpMappingChannel("snapshot", false));
-		this.registerMappingChannel("stable", new ChannelProviders.McpMappingChannel("stable", true));
-		this.registerMappingChannel("stable_nodoc", new ChannelProviders.McpMappingChannel("stable", false));
+		this.registerMappingChannel("snapshot", new ChannelProviders.McpMappingChannel(this.project, "snapshot", true));
+		this.registerMappingChannel("snapshot_nodoc", new ChannelProviders.McpMappingChannel(this.project, "snapshot", false));
+		this.registerMappingChannel("stable", new ChannelProviders.McpMappingChannel(this.project, "stable", true));
+		this.registerMappingChannel("stable_nodoc", new ChannelProviders.McpMappingChannel(this.project, "stable", false));
 	}
 }

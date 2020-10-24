@@ -1,12 +1,15 @@
 package me.i509.spunbric.gradle.mapping;
 
+import java.io.File;
+import java.util.Set;
+
 import org.cadixdev.lorenz.MappingSet;
-import org.gradle.api.artifacts.Dependency;
+import org.gradle.api.Project;
 
 public interface MappingChannelProvider {
 	boolean hasJavadoc();
 
-	void applyMappings(MappingSet mappingSet);
+	void applyMappings(MappingSet mappingSet, Set<File> mappingsFiles);
 
-	Dependency createDependency(String version);
+	Set<File> resolve(Project project, String version);
 }
