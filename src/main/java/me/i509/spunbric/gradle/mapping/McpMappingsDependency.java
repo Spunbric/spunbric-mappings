@@ -76,6 +76,7 @@ final class McpMappingsDependency implements SelfResolvingDependency {
 		final Path mappingsFile;
 
 		// TODO: Better names for files
+		//  Also needs to take channel name into account
 		if (channelProvider != null) {
 			mappingsFile = mappingsDir.resolve(String.format("%s.%s-%s-channel.tiny", GROUP, MODULE, this.getVersion()));
 		} else {
@@ -121,13 +122,12 @@ final class McpMappingsDependency implements SelfResolvingDependency {
 			MappingSet intermediaryToMapped;
 
 			// Read mappings from the mapping channel if provided
+			intermediaryToMapped = intermediaryToSrgMappings;
+
 			if (channelProvider != null) {
 				// Now we can create the srg -> mcp mappings
 				// Merge the intermediary -> [srg -> srg] -> mcp mappings
-				intermediaryToMapped = intermediaryToSrgMappings;
 				channelProvider.applyMappings(intermediaryToMapped, mappingChannelFiles);
-			} else {
-				intermediaryToMapped = intermediaryToSrgMappings;
 			}
 
 			// Reversal and merging does not preserve field descriptors :(
